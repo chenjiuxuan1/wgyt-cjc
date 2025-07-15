@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI面试系统</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>AI智能面试系统</h1>
+        <p>实时语音识别 · 自动记录 · 智能分析</p>
+      </div>
+
+      <div id="setupContainer" class="setup-container">
+        <h2>AI面试系统</h2>
+        <p>欢迎参加AI面试，请选择您要应聘的职位，系统将随机生成面试问题</p>
+        
+        <div class="setup-form">
+          <div class="input-group">
+            <label for="positionInput">应聘职位</label>
+            <select id="positionInput" class="form-input">
+              <option value="数据开发">数据开发</option>
+              <option value="数据分析">数据分析</option>
+              <option value="算法工程师">算法工程师</option>
+              <option value="前端工程师">前端工程师</option>
+              <option value="软件工程师">软件工程师</option>
+              <option value="大模型工程师">大模型工程师</option>
+            </select>
+          </div>
+          
+          <button id="setupButton" class="primary-button">生成面试问题</button>
+        </div>
+      </div>
+
+      <div id="interviewContainer" class="interview-container" style="display: none;">
+        <h2>面试进行中</h2>
+        
+        <div class="recording-guide">
+          <h3>录制说明</h3>
+          <p>您可以在一次录制中回答所有面试问题。请在回答时清晰表明您正在回答哪个问题。</p>
+          <p><strong>示例格式：</strong></p>
+          <ul>
+            <li>"对于第一个问题，我的回答是..."</li>
+            <li>"关于第二个问题，我认为..."</li>
+            <li>"第三个问题的答案是..."</li>
+          </ul>
+          <p>系统会自动分析您的回答并匹配到相应的问题。</p>
+        </div>
+        
+        <div class="interview-layout">
+          <div class="questions-section">
+            <div id="questionsContainer" class="questions-container">
+              <h3>面试问题</h3>
+              <div id="questionsList" class="questions-list">
+                <!-- 问题将动态加载 -->
+              </div>
+            </div>
+            
+            <div class="qa-pairs-container">
+              <h3>问答记录</h3>
+              <div id="qaPairsList" class="qa-pairs-list">
+                <!-- 问答对将动态加载 -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="answer-section">
+            <div class="video-box">
+              <video id="userVideo" autoplay muted playsinline></video>
+              <div class="video-controls">
+                <button id="startButton" class="record-button">
+                  <span class="material-symbols-rounded">mic</span> 开始录制
+                </button>
+                <button id="endButton" class="record-button" disabled>
+                  <span class="material-symbols-rounded">stop_circle</span> 结束录制
+                </button>
+                <button id="submitButton" class="submit-button">
+                  <span class="material-symbols-rounded">send</span> 提交回答
+                </button>
+              </div>
+            </div>
+            
+            <div class="recognition-result">
+              <h3>语音识别结果</h3>
+              <div id="result" class="result-box"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="interview-controls">
+          <button id="finishButton" class="primary-button">结束面试</button>
+        </div>
+      </div>
+
+      <div class="report-container" id="reportContainer" style="display: none;">
+        <h3>
+          <span class="material-symbols-rounded">analytics</span>
+          面试报告
+        </h3>
+        <div id="reportContent" class="report-content"></div>
+        <button id="newInterviewButton" class="primary-button">
+          <span class="material-symbols-rounded">refresh</span>
+          开始新面试
+        </button>
+      </div>
+    </div>
+
+    <!-- 问答对编辑模态框 -->
+    <div id="editQaPairModal" class="modal">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>编辑所有问题回答</h3>
+        <div id="allQuestionsAnswers" class="all-questions-answers">
+          <!-- 动态加载所有问题和回答 -->
+        </div>
+        <div class="modal-buttons">
+          <button id="saveQaPairBtn" class="primary-button">保存</button>
+          <button id="cancelEditButton" class="secondary-button">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载加密相关的库 -->
+    <script src="{{ url_for('static', filename='js/md5.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/hmac-sha256.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/HmacSHA1.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/enc-base64-min.js') }}"></script>
+
+    <!-- 配置信息 -->
+    <script>
+      // 从Flask传递配置
+      var APPID = "{{ xfyun_appid }}";
+      var API_KEY = "{{ xfyun_api_key }}";
+      
+      // 检查配置
+      console.log("配置检查 - APPID:", APPID);
+      if (!APPID || !API_KEY) {
+        console.error("错误：API配置缺失");
+      }
+    </script>
+
+    <!-- 主程序 -->
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+  </body>
+</html> 

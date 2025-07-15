@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>腾讯视频</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #fff;
+            /* overflow: hidden; */
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 100px;
+            background-color: #121212;
+            padding: 10px 0;
+        }
+
+        .sidebar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px 0;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .sidebar-item.active {
+            color: #fff;
+        }
+
+        .sidebar-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .all-channels {
+            padding: 10px 0;
+            border-top: 1px solid #222;
+            margin-top: 10px;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+        padding: 16px;
+        height: calc(100vh - 72px); /* 根据头部高度调整 */
+        overflow-y: auto;
+        }
+        /* 隐藏所有滚动条 */
+        ::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none;
+        }
+        .main-content {
+        scrollbar-width: none;
+    }
+
+        /* 搜索栏区域 */
+        .search-bar-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background-color: #222;
+            border-radius: 20px;
+            padding: 0 16px;
+            height: 36px;
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            width: 100%;
+            outline: none;
+            margin-left: 8px;
+        }
+
+        .search-icon {
+            color: #999;
+        }
+
+        /* 功能图标区域 */
+        .function-icons {
+            display: flex;
+            align-items: center;
+        }
+
+        .function-icon {
+            margin-left: 20px;
+            color: #999;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-left: 16px;
+            background-color: #333;
+        }
+
+        /* 标签页区域 */
+        .tabs {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .tabs-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 30px;
+        }
+
+        .tab-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .tab-item.active {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .more-btn {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            color: #999;
+            cursor: pointer;
+        }
+
+        /* 内容区域 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .video-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .video-card.large {
+            height: 360px;
+        }
+
+        .video-card.medium {
+            height: 240px;
+        }
+
+        .video-card video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        }
+
+        .video-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .video-meta {
+            font-size: 12px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+        }
+
+        .video-meta span {
+            margin-right: 8px;
+        }
+
+        .recent-badge {
+            background-color: #f5a623;
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .category-badge {
+            background-color: rgba(255,88,0,0.8);
+            color: #fff;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .video-description {
+            font-size: 14px;
+            margin-top: 4px;
+            color: #ccc;
+        }
+
+        .action-btn {
+            position: absolute;
+            right: 16px;
+            bottom: 20px;
+            background-color: #ff5500;
+            border: none;
+            color: #fff;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background-color: #ff6619;
+        }
+
+        .play-btn-container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .play-icon {
+            font-size: 24px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <div class="sidebar-item active">
+                <div class="sidebar-icon">&#128248;</div>
+                <span>首页</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#127911;</div>
+                <span>大数据</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#128241;</div>
+                <span>人工智能</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#128006;</div>
+                <span>软件工程</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#127891;</div>
+                <span>智能制造</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#9881;</div>
+                <span>家电维修</span>
+            </div>
+            <div class="sidebar-item">
+                <div class="sidebar-icon">&#128247;</div>
+                <span>服务行业</span>
+            </div>
+
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 搜索栏和功能图标 -->
+            <div class="search-bar-container">
+                <div class="search-bar">
+                    <span class="search-icon">&#128269;</span>
+                    <input type="text" class="search-input" placeholder="爬虫工程师">
+                </div>
+                <div class="function-icons">
+                    <div class="function-icon">&#9881;</div>
+                    <div class="function-icon">&#128338;</div>
+                    <div class="function-icon">&#128241;</div>
+                    <div class="function-icon">&#9993;</div>
+                    <div class="user-avatar"></div>
+                    <div class="function-icon">&#9776;</div>
+                    <div class="function-icon">&#8962;</div>
+                    <div class="function-icon">&#9747;</div>
+                    <div class="function-icon">&#10006;</div>
+                </div>
+            </div>
+
+            <!-- 标签页 -->
+            <div class="tabs">
+                <div class="tabs-title">为你推荐</div>
+                <div class="tab-item active">全部推荐</div>
+                <div class="tab-item">python</div>
+                <div class="tab-item">java</div>
+                <div class="tab-item">c/c++</div>
+                <div class="tab-item">html</div>
+                <div class="tab-item">其他</div>
+
+            </div>
+
+            <!-- 视频内容网格 -->
+            <div class="content-grid">
+                <!-- 第一个大卡片 -->
+                <div class="video-card large">
+                    <div class="placeholder-poster"></div>
+                    <div class="play-btn-container">
+                        <div class="play-icon">&#9658;</div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">胜券在握</div>
+                        <video width="800" height="600" controls>
+                            <source src="{{ url_for('static', filename='测试.mp4') }}" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        <div class="video-meta">
+                            <span class="recent-badge">最近在看</span>
+                            <span>电影</span>
+                            <span>邓超</span>
+                            <span>邓家佳</span>
+                        </div>
+                        <div class="video-description">"邓超领衔智斗黑心公司"</div>
+                        <video width="800" height="600" controls>
+                            <source src="{{ url_for('static', filename='测试2.mp4') }}" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                    </div>
+                    <button class="action-btn">追</button>
+                </div>
+
+                <!-- 第二个大卡片 -->
+                <div class="video-card large">
+                    <div class="placeholder-poster"></div>
+                    <div class="video-info">
+                        <div class="video-title">斗破苍穹年番</div>
+                        <video width="800" height="600" controls>
+                            <source src="{{ url_for('static', filename='测试.mp4') }}" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                        <div class="video-meta">
+                            <span class="recent-badge">最近在看</span>
+                            <span class="category-badge">动漫</span>
+                            <span>东方玄幻</span>
+                            <span>玄幻修真</span>
+                        </div>
+                        <div class="video-description">"唐火儿眼里全是萧炎，魂殿到来"</div>
+                    </div>
+                    <button class="action-btn">追</button>
+                </div>
+
+                <!-- 第三个卡片 -->
+                <div class="video-card medium">
+                    <div class="placeholder-poster"></div>
+                    <video width="800" height="600" controls>
+                            <source src="{{ url_for('static', filename='测试.mp4') }}" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                    <div class="video-info">
+                        <div class="video-title">点石成金</div>
+                    </div>
+                </div>
+
+                <!-- 第四个卡片 -->
+                <div class="video-card medium">
+                    <div class="placeholder-poster"></div>
+                    <video width="450" height="450" controls>
+                            <source src="{{ url_for('static', filename='测试.mp4') }}" type="video/mp4">
+                                您的浏览器不支持视频播放。
+                            </video>
+                    <div class="video-info">
+                        <!-- Content will be placed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 定义分类对应的二级分类
+            const subCategories = {
+                '大数据': ['全部推荐', 'python', '数据结构算法', '数据采集', 'flask开发', '其他'],
+                '人工智能': ['全部推荐', '机器识别', '机器学习', '人工智能核心算法', '其他'],
+                '软件工程': ['全部推荐', 'java', '前端开发', '软件测试', 'app开发', '其他'],
+                '智能制造': ['全部推荐', '物联网技术', 'c/c++', '供应链管理', '其他'],
+                '家电维修': ['全部推荐', '简单维修', '电器维修', '其他'],
+                '服务行业': ['全部推荐', '自我修养', '接待与运维', '其他']
+            };
+
+            // 更新标签页
+            function updateTabs(category) {
+                const tabs = document.querySelector('.tabs');
+                
+                // 如果是首页，不显示二级分类
+                if (category === '首页') {
+                    tabs.innerHTML = `<div class="tabs-title">为你推荐</div>`;
+                    return;
+                }
+                
+                // 其他分类显示对应的二级分类
+                const subCats = subCategories[category] || [];
+                let tabsHtml = `<div class="tabs-title">为你推荐</div>`;
+                subCats.forEach(subCat => {
+                    tabsHtml += `<div class="tab-item${subCat === '全部推荐' ? ' active' : ''}">${subCat}</div>`;
+                });
+                tabs.innerHTML = tabsHtml;
+
+                // 为新的标签添加点击事件
+                const tabItems = document.querySelectorAll('.tab-item');
+                tabItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        tabItems.forEach(tab => tab.classList.remove('active'));
+                        this.classList.add('active');
+                        loadVideos(category, this.textContent);
+                    });
+                });
+            }
+
+            // 加载视频
+            function loadVideos(category, subcategory = '全部推荐') {
+                const mainContent = document.querySelector('.content-grid');
+                
+                // 构建请求URL
+                const endpoint = `/get_videos/${category}/${subcategory}`;
+                
+                fetch(endpoint)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.videos && data.videos.length > 0) {
+                            mainContent.innerHTML = data.videos.map(video => `
+                                <div class="video-card large">
+                                    <video controls>
+                                        <source src="${video.url}" type="video/mp4">
+                                        您的浏览器不支持视频播放。
+                                    </video>
+                                    <div class="video-info">
+                                        <div class="video-title">${video.title}</div>
+                                        <div class="video-meta">
+                                            ${category === '首页' ? 
+                                                `<span class="category-badge">${video.category}</span>` :
+                                                `<span class="category-badge">${category}</span>
+                                                 ${subcategory !== '全部推荐' ? 
+                                                    `<span class="category-badge">${subcategory}</span>` : 
+                                                    ''}`
+                                            }
+                                        </div>
+                                        <button class="action-btn">追</button>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            mainContent.innerHTML = `
+                                <div class="no-content">
+                                    <p>暂无视频，正在更新中...</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mainContent.innerHTML = `
+                            <div class="no-content">
+                                <p>加载失败：${error.message}</p>
+                                <p>请稍后重试或联系管理员</p>
+                            </div>
+                        `;
+                    });
+            }
+
+            // 侧边栏点击事件
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const category = this.querySelector('span').textContent;
+                    
+                    // 更新活动状态
+                    sidebarItems.forEach(tab => tab.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 更新标签页并加载视频
+                    updateTabs(category);
+                    loadVideos(category, '全部推荐');
+                });
+            });
+
+            // 初始加载首页视频
+            function loadInitialVideos() {
+                updateTabs('首页');
+                loadVideos('首页', '全部推荐');
+            }
+
+            // 页面加载完成后执行初始加载
+            loadInitialVideos();
+
+            // 修改搜索功能
+            const searchInput = document.querySelector('.search-input');
+            
+            // 监听回车键
+            searchInput.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    const keyword = this.value.trim();
+                    if (keyword) {
+                        performSearch(keyword);
+                    } else {
+                        // 如果搜索框为空，恢复首页显示
+                        loadInitialVideos();
+                    }
+                }
+            });
+
+            function performSearch(keyword) {
+                const mainContent = document.querySelector('.content-grid');
+                const tabs = document.querySelector('.tabs');
+                
+                // 更新标签显示为搜索结果
+                tabs.innerHTML = `<div class="tabs-title">搜索结果: "${keyword}"</div>`;
+                
+                fetch(`/search?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.videos && data.videos.length > 0) {
+                            mainContent.innerHTML = data.videos.map(video => `
+                                <div class="video-card large">
+                                    <video controls>
+                                        <source src="${video.url}" type="video/mp4">
+                                        您的浏览器不支持视频播放。
+                                    </video>
+                                    <div class="video-info">
+                                        <div class="video-title">${video.title}</div>
+                                        <div class="video-meta">
+                                            <span class="category-badge">${video.category}</span>
+                                        </div>
+                                        <button class="action-btn">追</button>
+                                    </div>
+                                </div>
+                            `).join('');
+                        } else {
+                            mainContent.innerHTML = `
+                                <div class="no-content">
+                                    <p>未找到相关视频</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mainContent.innerHTML = `
+                            <div class="no-content">
+                                <p>搜索失败：${error.message}</p>
+                                <p>请稍后重试</p>
+                            </div>
+                        `;
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+[
+  {
+    "frame_number": 154,
+    "time_seconds": 5.138471805138472,
+    "emotions": {
+      "angry": 0.1,
+      "disgust": 0.0,
+      "fear": 0.02,
+      "happy": 0.75,
+      "sad": 0.08,
+      "surprise": 0.04,
+      "neutral": 0.0
+    }
+  },
+  {
+    "frame_number": 309,
+    "time_seconds": 10.31031031031031,
+    "emotions": {
+      "angry": 0.13,
+      "disgust": 0.01,
+      "fear": 0.06,
+      "happy": 0.65,
+      "sad": 0.06,
+      "surprise": 0.01,
+      "neutral": 0.09
+    }
+  },
+  {
+    "frame_number": 463,
+    "time_seconds": 15.448782115448783,
+    "emotions": {
+      "angry": 0.02,
+      "disgust": 0.0,
+      "fear": 0.04,
+      "happy": 0.58,
+      "sad": 0.03,
+      "surprise": 0.0,
+      "neutral": 0.32
+    }
+  }
+]

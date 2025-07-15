@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下半圆轮播 (根据最新图片)</title>
+</head>
+<body>
+    <style>
+        /* 核心样式 - 只保留圆环相关的样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            min-height: 100vh;
+            background: #1f1f3d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0f2ff;
+            padding-right: 20px;
+        }
+    
+        /* Carousel Container */
+        .carousel-container {
+            position: relative;
+            width: 550px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        /* Arc container */
+        .segmented-arc-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+        }
+    
+        /* 圆环主体 */
+        .segmented-arc {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transition: background 0.5s ease-in-out;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.85;
+            backdrop-filter: blur(2px);
+        }
+    
+        /* 圆环中心 */
+        .segmented-arc::before {
+            content: '';
+            position: absolute;
+            width: 45%;
+            height: 45%;
+            background: rgba(31, 31, 61, 0.8);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+        }
+    
+        /* 标签容器 */
+        .arc-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 6;
+        }
+    
+        /* 标签样式 */
+        .arc-labels span {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 15px;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0s linear 0.5s, top 0.4s ease-out, left 0.4s ease-out;
+            cursor: pointer;
+        }
+    
+        /* 标签悬停效果 */
+        .arc-labels span:hover {
+            color: #ffb74d;
+            text-decoration: underline;
+        }
+    
+        /* 标签可见状态 */
+        .arc-labels span.visible {
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease-in-out, top 0.4s ease-out, left 0.4s ease-out;
+        }
+    
+        /* 标签激活样式 */
+        .arc-labels span.active {
+            background-color: rgba(107, 190, 253, 0.2);
+            color: #ffb74d;
+            box-shadow: 0 0 8px rgba(107, 190, 253, 0.3);
+        }
+    
+        /* 分页导航 */
+        .pagination {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+    
+        .pagination .dot {
+            width: 10px;
+            height: 10px;
+            background-color: rgba(100, 150, 200, 0.3);
+            border: none;
+            border-radius: 50%;
+            margin: 7px 0;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
+        }
+    
+        .pagination .dot.active {
+            background-color: #6bbefd;
+            transform: scale(1.4);
+            box-shadow: 0 0 8px rgba(107, 190, 253, 0.7), 0 0 12px rgba(107, 190, 253, 0.5);
+        }
+    
+        /* 隐藏原始按钮组 */
+        .map-btn-group {
+            display: none;
+        }
+    </style>
+    
+    <!-- 恢复原始按钮组但设置为隐藏 -->
+    <div class="map-btn-group" v-show="app && app.currentScene === 'mainScene'">
+        <div class="btn" :class="{ active: showPolicyMatcherModal }" @click="openPolicyMatcher" id="btn-policy">政策推荐</div>
+        <div class="btn" :class="{ active: showCareerTestModal }" @click="openCareerTest" id="btn-career">职业测试</div>
+        <div class="btn" :class="{ active: is3DMap }" @click="toggleMapMode" id="btn-3dmap">3D地图户</div>
+        <div class="btn" :class="{ active: state.bar }" @click="setEffectToggle('bar')" id="btn-bar">柱状图</div>
+        <div class="btn" :class="{ active: state.flyLine }" @click="setEffectToggle('flyLine')" id="btn-flyline">飞线</div>
+        <div class="btn" :class="{ active: state.scatter }" @click="setEffectToggle('scatter')" id="btn-scatter">散点图</div>
+        <div class="btn" :class="{ active: state.card }" @click="setEffectToggle('card')" id="btn-card">标签</div>
+        <div class="btn" :class="{ active: state.particle }" @click="setEffectToggle('particle')" id="btn-particle">粒子效果</div>
+        <div class="btn" :class="{ active: state.mirror }" @click="setEffectToggle('mirror')" id="btn-mirror">镜面反射</div>
+        <div class="btn" :class="{ active: state.path }" @click="setEffectToggle('path')" id="btn-path">路径</div>
+        <!-- 添加控制图表显示的按钮 -->
+        <div class="btn" :class="{ active: chartVisible.pie }" @click="toggleChart('pie')" id="btn-pie">学历图</div>
+        <div class="btn" :class="{ active: chartVisible.wordCloud }" @click="toggleChart('wordCloud')" id="btn-wordcloud">地区图</div>
+        <div class="btn" :class="{ active: chartVisible.calendar }" @click="toggleChart('calendar')" id="btn-calendar">趋势图</div>
+        <!-- 新增按钮 -->
+        <div class="btn" :class="{ active: showJobRecommendation }" @click="openJobRecommendation" id="btn-job">岗位推荐</div>
+        <div class="btn" :class="{ active: showJobAlert }" @click="openJobAlert" id="btn-alert">岗位预警</div>
+        <div class="btn" :class="{ active: showPathPlanning }" @click="openPathPlanning" id="btn-planning">路径规划</div>
+    </div>
+    
+    <div class="carousel-container">
+        <div class="pagination">
+            <span class="dot active" data-target-group="0"></span>
+            <span class="dot" data-target-group="1"></span>
+            <span class="dot" data-target-group="2"></span>
+            <span class="dot" data-target-group="3"></span>
+        </div>
+    
+        <div class="segmented-arc-container">
+            <div class="segmented-arc">
+            </div>
+            <div class="arc-labels">
+                <span id="label-0"></span>
+                <span id="label-1"></span>
+                <span id="label-2"></span>
+                <span id="label-3"></span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const arcElement = document.querySelector('.segmented-arc');
+            const labelElements = [
+                document.getElementById('label-0'),
+                document.getElementById('label-1'),
+                document.getElementById('label-2'),
+                document.getElementById('label-3'),
+            ];
+            const dots = document.querySelectorAll('.pagination .dot');
+            const carouselContainer = document.querySelector('.carousel-container');
+    
+            // 获取原始按钮元素
+            const originalButtons = {
+                '政策推荐': document.getElementById('btn-policy'),
+                '职业测试': document.getElementById('btn-career'),
+                '3D地图户': document.getElementById('btn-3dmap'),
+                '柱状图': document.getElementById('btn-bar'),
+                '飞线': document.getElementById('btn-flyline'),
+                '散点图': document.getElementById('btn-scatter'),
+                '标签': document.getElementById('btn-card'),
+                '粒子效果': document.getElementById('btn-particle'),
+                '镜面反射': document.getElementById('btn-mirror'),
+                '路径': document.getElementById('btn-path'),
+                '学历图': document.getElementById('btn-pie'),
+                '地区图': document.getElementById('btn-wordcloud'),
+                '趋势图': document.getElementById('btn-calendar'),
+                '岗位推荐': document.getElementById('btn-job'),
+                '岗位预警': document.getElementById('btn-alert'),
+                '路径规划': document.getElementById('btn-planning')
+            };
+    
+            // --- Data for each group ---
+            const groupsData = [
+                // Group 0
+                [
+                    { label: '政策推荐', color: '#01162c' },
+                    { label: '职业测试', color: '#01162c' }, 
+                    { label: '3D地图户', color: '#01162c' }, 
+                    { label: '柱状图', color: '#01162c' }
+                ],
+                // Group 1
+                [
+                    { label: '飞线', color: '#01162c' },
+                    { label: '散点图', color: '#01162c' },
+                    { label: '标签', color: '#01162c' },
+                    { label: '粒子效果', color: '#01162c' }
+                ],
+                // Group 2
+                [
+                    { label: '镜面反射', color: '#01162c' },
+                    { label: '路径', color: '#01162c' },
+                    { label: '学历图', color: '#01162c' },
+                    { label: '地区图', color: '#01162c' }
+                ],
+                // Group 3
+                [
+                    { label: '趋势图', color: '#01162c' },
+                    { label: '岗位推荐', color: '#01162c' },
+                    { label: '岗位预警', color: '#01162c' },
+                    { label: '路径规划', color: '#01162c' }
+                ]
+            ];
+    
+            const itemsPerGroup = 4;
+            const totalGroups = groupsData.length;
+            const segmentAngle = 180 / itemsPerGroup;
+            let currentGroup = 0;
+            let currentSegmentIndex = 0;
+            let carouselInterval;
+    
+            const arcContainer = document.querySelector('.segmented-arc-container');
+            let arcRadius = 0;
+            let labelRadius = 0;
+    
+            function calculateDimensions() {
+                arcRadius = arcContainer.offsetWidth / 2;
+                labelRadius = arcRadius * 0.65;
+            }
+    
+            function positionLabels(groupIndex) {
+                if (arcRadius === 0) calculateDimensions();
+    
+                const groupData = groupsData[groupIndex];
+                groupData.forEach((itemData, index) => {
+                    const startAngle = 90; // Left semi-circle
+                    const angleOffset = segmentAngle / 2;
+                    const midAngleDegrees = startAngle + (index * segmentAngle) + angleOffset;
+                    const midAngleRadians = midAngleDegrees * Math.PI / 180;
+    
+                    const labelX = arcRadius + labelRadius * Math.cos(midAngleRadians);
+                    const labelY = arcRadius + labelRadius * Math.sin(midAngleRadians);
+    
+                    const labelEl = labelElements[index];
+                    if(labelEl){
+                        labelEl.style.left = `${labelX}px`;
+                        labelEl.style.top = `${labelY}px`;
+                        labelEl.textContent = itemData.label;
+                        labelEl.classList.add('visible');
+                        
+                        // 检查相应原始按钮的状态
+                        const originalBtn = originalButtons[itemData.label];
+                        if (originalBtn && originalBtn.classList.contains('active')) {
+                            labelEl.classList.add('active');
+                        } else {
+                            labelEl.classList.remove('active');
+                        }
+                        
+                        // 添加点击事件 - 触发原始按钮的点击
+                        labelEl.onclick = function() {
+                            const originalBtn = originalButtons[itemData.label];
+                            if (originalBtn) {
+                                // 触发原始按钮点击
+                                originalBtn.click();
+                                // 更新激活状态
+                                if (originalBtn.classList.contains('active')) {
+                                    labelEl.classList.add('active');
+                                } else {
+                                    labelEl.classList.remove('active');
+                                }
+                            }
+                            
+                            // 可选：直接输出调试信息
+                            console.log(`点击了: ${itemData.label}`);
+                        };
+                        
+                        // 添加鼠标悬停事件
+                        labelEl.addEventListener('mouseenter', stopCarousel);
+                        labelEl.addEventListener('mouseleave', startCarousel);
+                    }
+                });
+    
+                for (let i = groupData.length; i < labelElements.length; i++) {
+                    if(labelElements[i]) labelElements[i].classList.remove('visible');
+                }
+            }
+    
+            function updateArc(groupIndex, activeIndex) {
+                if (groupIndex < 0 || groupIndex >= totalGroups) return;
+                if (arcRadius === 0) calculateDimensions();
+    
+                const groupData = groupsData[groupIndex];
+                let gradientString = 'conic-gradient(transparent 0deg 180deg, ';
+                let currentAngle = 180;
+                groupData.forEach((itemData, index) => {
+                    let currentColor = itemData.color;
+                    if (index === activeIndex) {
+                        // Slightly darken the active segment
+                        currentColor = darkenColor(currentColor, 0.2);
+                    }
+                    // 在颜色中添加透明度
+                    currentColor = addTransparency(currentColor, 0.85);
+                    gradientString += `${currentColor} ${currentAngle}deg ${currentAngle + segmentAngle}deg`;
+                    currentAngle += segmentAngle;
+                    if (index < groupData.length - 1) { gradientString += ', '; }
+                });
+                gradientString += ')';
+                arcElement.style.background = gradientString;
+    
+                labelElements.forEach(lbl => lbl.classList.remove('visible'));
+                setTimeout(() => {
+                    positionLabels(groupIndex);
+                }, 50);
+    
+                // Update active class for pagination dots
+                dots.forEach(d => d.classList.remove('active'));
+                if (dots[groupIndex]) {
+                    dots[groupIndex].classList.add('active');
+                }
+            }
+    
+            // 添加颜色透明度的辅助函数
+            function addTransparency(color, alpha) {
+                // 处理rgba格式
+                if (color.startsWith('rgba')) {
+                    const parts = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)/);
+                    if (parts) {
+                        return `rgba(${parts[1]}, ${parts[2]}, ${parts[3]}, ${alpha})`;
+                    }
+                    return color;
+                }
+                
+                // 处理rgb格式
+                if (color.startsWith('rgb')) {
+                    const parts = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                    if (parts) {
+                        return `rgba(${parts[1]}, ${parts[2]}, ${parts[3]}, ${alpha})`;
+                    }
+                    return color;
+                }
+                
+                // 处理十六进制格式
+                let r, g, b;
+                
+                if (color.startsWith('#')) {
+                    color = color.slice(1);
+                }
+                
+                if (color.length === 3) {
+                    r = parseInt(color.charAt(0) + color.charAt(0), 16);
+                    g = parseInt(color.charAt(1) + color.charAt(1), 16);
+                    b = parseInt(color.charAt(2) + color.charAt(2), 16);
+                } else if (color.length === 6) {
+                    r = parseInt(color.substring(0, 2), 16);
+                    g = parseInt(color.substring(2, 4), 16);
+                    b = parseInt(color.substring(4, 6), 16);
+                } else {
+                    return color;
+                }
+                
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+    
+            function darkenColor(color, factor) {
+                let usePound = false;
+                if (color[0] === "#") {
+                    color = color.slice(1);
+                    usePound = true;
+                }
+    
+                const num = parseInt(color, 16);
+    
+                let r = (num >> 16) + Math.round(factor * 255);
+                if (r > 255) r = 255;
+                else if (r < 0) r = 0;
+    
+                let b = ((num >> 8) & 0x00FF) + Math.round(factor * 255);
+                if (b > 255) b = 255;
+                else if (b < 0) b = 0;
+    
+                let g = (num & 0x0000FF) + Math.round(factor * 255);
+                if (g > 255) g = 255;
+                else if (g < 0) g = 0;
+    
+                return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16).padStart(6, '0');
+            }
+    
+            function startCarousel() {
+                clearInterval(carouselInterval);
+                carouselInterval = setInterval(() => {
+                    updateArc(currentGroup, currentSegmentIndex);
+                    currentSegmentIndex++;
+                    if (currentSegmentIndex >= itemsPerGroup) {
+                        currentSegmentIndex = 0;
+                        currentGroup++;
+                        if (currentGroup >= totalGroups) {
+                            currentGroup = 0; // Loop back to the first group if needed
+                        }
+                        updateArc(currentGroup, currentSegmentIndex); // Update arc for the new group
+                    }
+                }, 1500); // Adjust interval as needed
+            }
+    
+            function stopCarousel() {
+                clearInterval(carouselInterval);
+            }
+    
+            // Event Listeners for Pagination Dots
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    currentGroup = index;
+                    currentSegmentIndex = 0; // Reset segment index when changing group
+                    updateArc(currentGroup, currentSegmentIndex);
+                    startCarousel(); // Restart carousel for the new group
+                });
+            });
+    
+            // Event Listeners for Mouse Hover
+            carouselContainer.addEventListener('mouseenter', stopCarousel);
+            carouselContainer.addEventListener('mouseleave', startCarousel);
+    
+            // Initial setup
+            calculateDimensions();
+            positionLabels(0);
+            updateArc(0, 0); // Highlight the first segment initially
+            dots[0].classList.add('active'); // Ensure the first dot is active
+            setTimeout(startCarousel, 1000); // Start carousel with a delay
+    
+            // Recalculate dimensions on resize
+            window.addEventListener('resize', () => {
+                calculateDimensions();
+                positionLabels(currentGroup);
+                updateArc(currentGroup, currentSegmentIndex % itemsPerGroup); // Ensure highlighting on resize
+            });
+        });
+    </script>
+</body>
+</html>

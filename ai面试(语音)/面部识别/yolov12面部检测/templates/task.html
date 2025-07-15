@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>任务详情 - 面部表情检测系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .task-info {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .progress-container {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .progress-bar {
+            height: 30px;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .result-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .result-item img {
+            width: 100%;
+            border-radius: 5px;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: #0b7dda;
+        }
+        .status-processing {
+            color: #2196F3;
+        }
+        .status-completed {
+            color: #4CAF50;
+        }
+        .status-failed {
+            color: #f44336;
+        }
+    </style>
+    <script>
+        function updateStatus() {
+            fetch('/task_status/{{ task_id }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = data.status;
+                    document.getElementById('status').className = 'status-' + data.status.toLowerCase();
+                    
+                    if (data.message) {
+                        document.getElementById('message').textContent = data.message;
+                    }
+                    
+                    if (data.progress !== undefined) {
+                        const progressBar = document.getElementById('progress-bar');
+                        progressBar.style.width = data.progress + '%';
+                        progressBar.textContent = data.progress + '%';
+                    }
+                    
+                    // 如果有新的结果，刷新结果容器
+                    if (data.results && data.results.length > 0) {
+                        const resultsContainer = document.getElementById('results-container');
+                        resultsContainer.innerHTML = '';
+                        
+                        data.results.forEach(result => {
+                            const resultPath = '{{ task_id }}/' + result;
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            
+                            const img = document.createElement('img');
+                            img.src = '/results/' + resultPath;
+                            img.alt = result;
+                            
+                            const link = document.createElement('a');
+                            link.href = '/results/' + resultPath;
+                            link.textContent = '下载';
+                            link.setAttribute('download', '');
+                            
+                            resultItem.appendChild(img);
+                            resultItem.appendChild(document.createElement('br'));
+                            resultItem.appendChild(link);
+                            
+                            resultsContainer.appendChild(resultItem);
+                        });
+                    }
+                    
+                    // 如果任务仍在处理中，继续轮询
+                    if (data.status === '处理中') {
+                        setTimeout(updateStatus, 2000);
+                    }
+                })
+                .catch(error => console.error('更新状态失败:', error));
+        }
+        
+        // 页面加载时开始轮询
+        window.onload = function() {
+            updateStatus();
+        };
+    </script>
+</head>
+<body>
+    <h1>任务详情</h1>
+    
+    <a href="/" class="back-button">返回主页</a>
+    
+    <div class="task-info">
+        <h2>{{ task.video_name }}</h2>
+        <p><strong>状态:</strong> <span id="status" class="status-{{ task.status.lower() }}">{{ task.status }}</span></p>
+        <p id="message">{{ task.message if task.message else '' }}</p>
+        <p><strong>检测间隔:</strong> {{ task.interval }} 秒</p>
+        
+        {% if task.duration %}
+        <p><strong>视频时长:</strong> {{ task.duration }}</p>
+        {% endif %}
+        
+        {% if task.fps %}
+        <p><strong>帧率:</strong> {{ task.fps }} fps</p>
+        {% endif %}
+        
+        <h3>处理进度:</h3>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar" style="width: {{ task.progress }}%">{{ task.progress }}%</div>
+        </div>
+    </div>
+    
+    <h2>检测结果</h2>
+    <div id="results-container" class="results">
+        {% if task.results %}
+            {% for result in task.results %}
+                <div class="result-item">
+                    <img src="{{ url_for('download_file', filename=task_id + '/' + result) }}" alt="{{ result }}">
+                    <br>
+                    <a href="{{ url_for('download_file', filename=task_id + '/' + result) }}" download>下载</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>暂无结果</p>
+        {% endif %}
+    </div>
+</body>
+</html> 

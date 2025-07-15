@@ -1,0 +1,122 @@
+[
+  {
+    "frame_number": 0,
+    "emotions": {
+      "angry": 0.01,
+      "disgust": 0.0,
+      "fear": 0.06,
+      "happy": 0.1,
+      "sad": 0.12,
+      "surprise": 0.0,
+      "neutral": 0.7
+    }
+  },
+  {
+    "frame_number": 50,
+    "emotions": {
+      "angry": 0.04,
+      "disgust": 0.0,
+      "fear": 0.1,
+      "happy": 0.31,
+      "sad": 0.12,
+      "surprise": 0.02,
+      "neutral": 0.41
+    }
+  },
+  {
+    "frame_number": 100,
+    "emotions": {
+      "angry": 0.0,
+      "disgust": 0.0,
+      "fear": 0.0,
+      "happy": 0.99,
+      "sad": 0.0,
+      "surprise": 0.0,
+      "neutral": 0.01
+    }
+  },
+  {
+    "frame_number": 150,
+    "emotions": {
+      "angry": 0.01,
+      "disgust": 0.0,
+      "fear": 0.01,
+      "happy": 0.92,
+      "sad": 0.0,
+      "surprise": 0.05,
+      "neutral": 0.0
+    }
+  },
+  {
+    "frame_number": 200,
+    "emotions": {
+      "angry": 0.06,
+      "disgust": 0.0,
+      "fear": 0.11,
+      "happy": 0.01,
+      "sad": 0.05,
+      "surprise": 0.66,
+      "neutral": 0.12
+    }
+  },
+  {
+    "frame_number": 250,
+    "emotions": {
+      "angry": 0.09,
+      "disgust": 0.0,
+      "fear": 0.45,
+      "happy": 0.01,
+      "sad": 0.13,
+      "surprise": 0.13,
+      "neutral": 0.19
+    }
+  },
+  {
+    "frame_number": 300,
+    "emotions": {
+      "angry": 0.11,
+      "disgust": 0.0,
+      "fear": 0.49,
+      "happy": 0.0,
+      "sad": 0.15,
+      "surprise": 0.18,
+      "neutral": 0.07
+    }
+  },
+  {
+    "frame_number": 350,
+    "emotions": {
+      "angry": 0.01,
+      "disgust": 0.0,
+      "fear": 0.02,
+      "happy": 0.92,
+      "sad": 0.01,
+      "surprise": 0.0,
+      "neutral": 0.03
+    }
+  },
+  {
+    "frame_number": 400,
+    "emotions": {
+      "angry": 0.02,
+      "disgust": 0.0,
+      "fear": 0.28,
+      "happy": 0.0,
+      "sad": 0.02,
+      "surprise": 0.64,
+      "neutral": 0.03
+    }
+  },
+  {
+    "frame_number": 450,
+    "emotions": {
+      "angry": 0.05,
+      "disgust": 0.0,
+      "fear": 0.1,
+      "happy": 0.51,
+      "sad": 0.01,
+      "surprise": 0.27,
+      "neutral": 0.06
+    }
+  }
+]

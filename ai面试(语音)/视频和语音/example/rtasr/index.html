@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI面试系统</title>
+    <style>
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .video-container {
+        display: flex;
+        justify-content: space-between;
+        margin: 20px 0;
+      }
+      .video-box {
+        width: 48%;
+        position: relative;
+      }
+      video, img {
+        width: 100%;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+      .controls {
+        margin: 20px 0;
+        text-align: center;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        margin: 0 10px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: none;
+        background-color: #4CAF50;
+        color: white;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>AI面试系统</h1>
+      <div class="video-container">
+        <div class="video-box">
+          <h3>面试者</h3>
+          <video id="userVideo" autoplay playsinline></video>
+        </div>
+        <div class="video-box">
+          <h3>AI面试官</h3>
+          <img id="aiInterviewer" src="./ai-interviewer.jpg" alt="AI面试官">
+        </div>
+      </div>
+      <div class="controls">
+        <button id="startButton">开始面试</button>
+        <button id="endButton" disabled>结束面试</button>
+      </div>
+      <div>
+        <h3>实时语音识别结果：</h3>
+        <div id="result"></div>
+      </div>
+    </div>
+    <script>
+      var APPID = "";
+      var API_KEY = "";
+    </script>
+    <script src="../hmac-sha256.js"></script>
+    <script src="../HmacSHA1.js"></script>
+    <script src="../md5.js"></script>
+    <script src="../enc-base64-min.js"></script>
+    <script src="../../dist/index.umd.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

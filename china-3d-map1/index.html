@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Map</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <script src="./public/live2dcubismcoreV5.min.js"></script>
+    <script>
+      // 定义全局变量 (如果 index.js 依赖它们)
+      var APPID = "861c558b"; // 注意：生产环境不应硬编码
+      var API_KEY = "799a03a71e3328ad0e11f8748ab722c0"; // 注意：生产环境不应硬编码
+    </script>
+    <script src="/js/libs/hmac-sha256.js"></script> <!-- 调整路径 -->
+    <script src="/js/libs/HmacSHA1.js"></script>     <!-- 调整路径 -->
+    <script src="/js/libs/md5.js"></script>         <!-- 调整路径 -->
+    <script src="/js/libs/enc-base64-min.js"></script><!-- 调整路径 -->
+    <script src="/js/libs/index.umd.js"></script>   <!-- 调整路径, RecorderManager -->
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=b9acf58b9219d6d64537b5fcfe87ffd3&plugin=AMap.ControlBar,AMap.MarkerClusterer,AMap.ToolBar,Map3D,AMap.Buildings"></script>
+  </body>
+</html>
